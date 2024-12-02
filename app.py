@@ -1,6 +1,7 @@
 from flask import Flask, request, jsonify, make_response
 from index import visualize_regex_railroad
 from flask_cors import CORS
+from check import validate_regex
 
 app = Flask(__name__)
 CORS(app)  # 允许所有来源的跨域请求
@@ -16,11 +17,13 @@ def generate_diagram():
 
     data = request.get_json()
     regex_pattern = data.get('regexPattern', '')
+    flag = validate_regex(regex_pattern)
 
     if not regex_pattern:
         return jsonify({'error': 'No regex pattern provided'}), 400
 
-    visualize_regex_railroad(regex_pattern)
+    if flag:
+        visualize_regex_railroad(regex_pattern)
 
     return jsonify({'message': 'SVG file has been generated!'})
 
