@@ -1,0 +1,177 @@
+<!doctype html>
+<title>Railroad Diagram Generator</title>
+<link href="railroad.css" rel=stylesheet>
+
+<!-- 添加输入框 -->
+<div class="input">
+    <form id="dataForm">
+        <label for="regexPattern">Enter Regex Pattern:</label>
+        <input type="text" name="regexPattern" id="regexPattern" required>
+        <button type="submit">Generate Diagram</button>
+    </form>
+</div>
+
+<div class="output-image"><svg class="railroad-diagram"></svg></div>
+
+<script>
+    // Fetch SVG content on page load
+    fetch('/regex_visualization.svg')
+      .then(response => response.text())
+      .then(svgContent => {
+        document.querySelector('.railroad-diagram').innerHTML = svgContent;
+      });
+
+    // Handle form submission
+    document.getElementById('dataForm').addEventListener('submit', function(event) {
+        event.preventDefault();
+        const formData = new FormData(this);
+        const data = {};
+        formData.forEach((value, key) => {
+            data[key] = value;
+        });
+
+        fetch('http://127.0.0.1:8001/generate-diagram', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        });
+    });
+</script>
+
+<style>
+@media all and (min-width: 400px) {
+    html, body { margin: 0; padding: 0; height: 100%; }
+    body {
+        display: grid;
+        grid-template:
+            "input"  auto
+            "output" 1fr
+            / 100%;
+        max-width: 100%;
+    }
+}
+.input {
+    grid-area: input;
+    padding: 20px;
+    background-color: #f9f9f9;
+    border-bottom: 1px solid #ddd;
+}
+.output-image {
+    grid-area: output;
+    overflow: auto;
+    height: calc(100vh - 60px); /* 减去输入框的高度 */
+    width: 100vw;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.info {
+    grid-area: info;
+    padding: 20px;
+}
+.info table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+}
+.info th, .info td {
+    padding: 8px;
+    text-align: left;
+    border: 1px solid #ddd;
+}
+.info button {
+    display: block;
+    margin-top: 10px;
+    padding: 10px 15px;
+    background-color: #007BFF;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+.info button:hover {
+    background-color: #0056b3;
+}
+
+/* Additional styles for SVG */
+svg.railroad-diagram {
+    width: 100%; /* 使文本占据整个宽度 */
+    height: 100%;
+    background-color: hsl(30,20%,95%);
+}
+svg.railroad-diagram path {
+    stroke-width: 3;
+    stroke: black;
+    fill: rgba(0,0,0,0);
+}
+svg.railroad-diagram text {
+    font: bold 14px monospace;
+    text-anchor: middle;
+    white-space: pre;
+}
+svg.railroad-diagram text.diagram-text {
+    font-size: 12px;
+}
+svg.railroad-diagram text.diagram-arrow {
+    font-size: 16px;
+}
+svg.railroad-diagram text.label {
+    text-anchor: start;
+}
+svg.railroad-diagram text.comment {
+    font: italic 12px monospace;
+}
+svg.railroad-diagram g.non-terminal text {
+    /*font-style: italic;*/
+}
+svg.railroad-diagram rect {
+    stroke-width: 3;
+    stroke: black;
+    fill: hsl(120,100%,90%);
+}
+svg.railroad-diagram rect.group-box {
+    stroke: gray;
+    stroke-dasharray: 10 5;
+    fill: none;
+}
+svg.railroad-diagram path.diagram-text {
+    stroke-width: 3;
+    stroke: black;
+    fill: white;
+    cursor: help;
+}
+svg.railroad-diagram g.diagram-text:hover path.diagram-text {
+    fill: #eee;
+}
+
+/* Responsive adjustments */
+@media (max-width: 400px) {
+    body {
+        grid-template:
+            "input"  auto
+            "output" 1fr
+            / 100%;
+    }
+    .input {
+        padding: 10px;
+    }
+    .output-image {
+        height: calc(100vh - 40px); /* Adjust for smaller screens */
+    }
+    .info {
+        padding: 10px;
+    }
+    .info table {
+        width: 100%;
+        margin-bottom: 10px;
+    }
+    .info th, .info td {
+        padding: 6px;
+    }
+    .info button {
+        margin-top: 5px;
+        padding: 8px 12px;
+    }
+}
+</style>
